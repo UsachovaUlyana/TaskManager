@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.25.xsd">
+
+    <include file="changelog/changesets/001-create-users-table.xml"/>
+    <include file="changelog/changesets/002-create-projects-table.xml"/>
+    <include file="changelog/changesets/003-create-tags-table.xml"/>
+    <include file="changelog/changesets/004-create-tasks-table.xml"/>
+    <include file="changelog/changesets/005-create-task-tags-table.xml"/>
+    <include file="changelog/changesets/006-create-user-projects-table.xml"/>
+    <include file="changelog/changesets/007-create-api-keys-table.xml"/>
+    <include file="changelog/changesets/008-create-idempotency-keys-table.xml"/>
+
+</databaseChangeLog>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.25.xsd">
+
+    <changeSet id="005-create-task-tags-table" author="taskmanager">
+        <createTable tableName="task_tags">
+            <column name="task_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tag_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey
+            tableName="task_tags"
+            columnNames="task_id, tag_id"
+            constraintName="pk_task_tags"/>
+
+        <addForeignKeyConstraint
+            baseTableName="task_tags"
+            baseColumnNames="task_id"
+            constraintName="fk_task_tags_task_id"
+            referencedTableName="tasks"
+            referencedColumnNames="id"
+            onDelete="CASCADE"/>
+
+        <addForeignKeyConstraint
+            baseTableName="task_tags"
+            baseColumnNames="tag_id"
+            constraintName="fk_task_tags_tag_id"
+            referencedTableName="tags"
+            referencedColumnNames="id"
+            onDelete="CASCADE"/>
+
+        <createIndex tableName="task_tags" indexName="idx_task_tags_task_id">
+            <column name="task_id"/>
+        </createIndex>
+
+        <createIndex tableName="task_tags" indexName="idx_task_tags_tag_id">
+            <column name="tag_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

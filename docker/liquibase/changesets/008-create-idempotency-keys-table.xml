@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.25.xsd">
+
+    <changeSet id="008-create-idempotency-keys-table" author="taskmanager">
+        <createTable tableName="idempotency_keys">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="key" type="varchar(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="request_path" type="varchar(500)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="request_body_hash" type="varchar(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="response_status_code" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="response_body" type="text">
+                <constraints nullable="true"/>
+            </column>
+            <column name="created_at" type="timestamp with time zone" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="expires_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="idempotency_keys" indexName="idx_idempotency_keys_key">
+            <column name="key"/>
+        </createIndex>
+
+        <createIndex tableName="idempotency_keys" indexName="idx_idempotency_keys_expires_at">
+            <column name="expires_at"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>
