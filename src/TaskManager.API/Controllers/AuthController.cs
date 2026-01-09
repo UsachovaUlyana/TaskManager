@@ -68,4 +68,34 @@ public class AuthController : ControllerBase
         var response = await _authService.LoginAsync(request, cancellationToken);
         return Ok(ApiResponse<AuthResponse>.Ok(response));
     }
+
+    /// <summary>
+    /// Generates a new API key for the authenticated user.
+    /// </summary>
+    /// <param name="request">The API key creation request.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The generated API key (shown only once).</returns>
+    /// <response code="200">Returns the generated API key.</response>
+    /// <response code="400">If the request is invalid.</response>
+    /// <response code="401">If the user is not authenticated.</response>
+    /// <remarks>
+    /// **Important:** The API key is shown only once. Store it securely.
+    /// 
+    /// To use the API key, include it in the X-Api-Key header:
+    /// ```
+    /// X-Api-Key: tm_your_generated_key_here
+    /// ```
+    /// </remarks>
+    [HttpPost("api-key")]
+    [Authorize]
+    [ProducesResponseType(typeof(ApiResponse<ApiKeyResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<ApiResponse<ApiKeyResponse>>> GenerateApiKey(
+        [FromBody] CreateApiKeyRequest request,
+        CancellationToken cancellationToken)
+    {
+        var response = await _authService.GenerateApiKeyAsync(request, cancellationToken);
+        return Ok(ApiResponse<ApiKeyResponse>.Ok(response));
+    }
 }
