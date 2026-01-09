@@ -326,7 +326,16 @@ dotnet run
    ```
    > ⚠️ Не забудьте префикс `Bearer ` (с пробелом после)!
 
-4. **Создание задачи** — выполните `POST /api/tasks`:
+4. **(Опционально) Генерация API Key** — выполните `POST /api/auth/api-key`:
+   ```json
+   {
+     "name": "Test Key",
+     "expirationDays": 30
+   }
+   ```
+   Скопируйте `apiKey` из ответа и используйте в **Authorize → ApiKey**.
+
+5. **Создание задачи** — выполните `POST /api/tasks`:
    ```json
    {
      "title": "Моя первая задача",
@@ -359,6 +368,7 @@ docker-compose down -v
 |-------|----------|----------|-------------|
 | POST | `/api/auth/register` | Регистрация нового пользователя | Нет |
 | POST | `/api/auth/login` | Вход и получение JWT токена | Нет |
+| POST | `/api/auth/api-key` | Генерация API ключа | JWT |
 
 ### Задачи (`/api/tasks`)
 
@@ -437,12 +447,28 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 ### API Key
 
-Альтернативный способ аутентификации для сервис-to-сервис взаимодействия:
+Альтернативный способ аутентификации для сервис-to-сервис взаимодействия.
+
+**Генерация API Key через Swagger:**
+
+1. Авторизуйтесь через JWT (см. выше)
+2. Выполните `POST /api/auth/api-key`:
+   ```json
+   {
+     "name": "My API Key",
+     "expirationDays": 30
+   }
+   ```
+3. Скопируйте `apiKey` из ответа — он показывается **только один раз!**
+
+**Использование API Key:**
 
 ```http
 GET /api/tasks
-X-Api-Key: your-api-key-here
+X-Api-Key: tm_ваш_сгенерированный_ключ
 ```
+
+В Swagger UI нажмите **Authorize** и введите ключ в поле **ApiKey**.
 
 ### Матрица авторизации
 
@@ -622,58 +648,6 @@ X-Idempotency-Key: unique-request-id-123
 
 ---
 
-## Соответствие критериям оценивания
-
-| Критерий | Баллы | Реализация |
-|----------|-------|------------|
-| **Архитектура и чистота кода** | **20** | |
-| Разделение слоёв | 5 | Controllers → Services → Repositories |
-| DTO для запросов/ответов | 3 | DTOs в Application слое |
-| Нет бизнес-логики в контроллерах | 4 | Вся логика в Services |
-| Naming conventions | 4 | PascalCase для классов, camelCase для переменных |
-| async/await | 4 | Все I/O операции асинхронны |
-| **База данных** | **5** | |
-| PostgreSQL + Docker + Liquibase | 3 | docker-compose.yml + liquibase changesets |
-| Many-to-many связи | 2 | TaskTags, UserProjects |
-| **EF Core + Dapper** | **15** | |
-| CRUD через EF Core | 5 | BaseRepository<T> |
-| Dapper с транзакцией | 5 | TaskTagRepository.AssignTagsToTaskAsync |
-| Репозиторный слой | 5 | Отдельные репозитории для каждой сущности |
-| **Авторизация** | **15** | |
-| JWT Bearer | 5 | JwtBearerDefaults в Program.cs |
-| API Key | 5 | ApiKeyAuthenticationHandler |
-| Ролевой доступ | 5 | [Authorize(Roles = "Admin")] |
-| **Redis кэширование** | **5** | |
-| GET кэшируются | 3 | RedisCacheService в TaskService, ProjectService |
-| Инвалидация кэша | 2 | RemoveByPatternAsync при изменениях |
-| **Prometheus metrics** | **5** | prometheus-net.AspNetCore, /metrics |
-| **Swagger** | **5** | |
-| Swagger UI | 3 | /swagger |
-| Документация эндпоинтов | 2 | XML-комментарии, ProducesResponseType |
-| **Логирование** | **5** | |
-| Логирование запросов/ошибок | 3 | RequestLoggingMiddleware |
-| Структурированные логи | 2 | Serilog с JSON форматом |
-| **Pagination + Filtering** | **5** | |
-| Пагинация | 3 | PagedResult<T>, page/pageSize параметры |
-| Фильтрация | 2 | TaskFilterRequest с фильтрами |
-| **Обработка ошибок** | **5** | |
-| Централизованный middleware | 3 | ExceptionMiddleware |
-| Единый формат ответа | 2 | ApiError, ApiResponse<T> |
-| **Health Checks** | **5** | |
-| Проверка Web API | 2 | /health endpoint |
-| Проверка PostgreSQL и Redis | 3 | AddNpgSql, AddRedis |
-| **Unit тесты** | **15** | |
-| Покрытие репозиториев | 10 | 4 репозитория × ~12 тестов |
-| CRUD сценарии | 5 | Add, Get, Update, Delete, GetPaged |
-| **Бонусы** | **+10** | |
-| Grafana | 5 | Предустановленный дашборд |
-| Rate Limiting | 3 | AspNetCoreRateLimit, 100 req/min |
-| Idempotency | 2 | X-Idempotency-Key header |
-
-**Итого: 110 баллов** (100 обязательных + 10 бонусных)
-
----
-
 ## Troubleshooting
 
 ### Проблема: "Не удается получить доступ к сайту" на localhost:5000
@@ -723,12 +697,6 @@ Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 4. Проверьте статус target в Prometheus: http://localhost:9090/targets
 5. Если target показывает `DOWN`, убедитесь что Docker Desktop запущен
 
-### Проблема: Liquibase контейнер показывает "Exited"
-
-**Это нормально!** Liquibase — это утилита для миграций. Она:
-1. Запускается
-2. Применяет миграции к базе данных
-3. Завершает работу (Exit code 0 = успешно)
 
 Проверить успешность миграций:
 ```bash

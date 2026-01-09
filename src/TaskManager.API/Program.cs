@@ -123,8 +123,8 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
 // Configure Authentication
 builder.Services.AddAuthentication(options =>
 {
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultAuthenticateScheme = "MultiAuth";
+    options.DefaultChallengeScheme = "MultiAuth";
 })
 .AddJwtBearer(options =>
 {
@@ -141,7 +141,20 @@ builder.Services.AddAuthentication(options =>
     };
 })
 .AddScheme<ApiKeyAuthenticationOptions, ApiKeyAuthenticationHandler>(
-    AuthenticationSchemes.ApiKey, _ => { });
+    AuthenticationSchemes.ApiKey, _ => { })
+.AddPolicyScheme("MultiAuth", "JWT or API Key", options =>
+{
+    options.ForwardDefaultSelector = context =>
+    {
+        // If X-Api-Key header is present, use API Key authentication
+        if (context.Request.Headers.ContainsKey("X-Api-Key"))
+        {
+            return AuthenticationSchemes.ApiKey;
+        }
+        // Otherwise, use JWT Bearer authentication
+        return JwtBearerDefaults.AuthenticationScheme;
+    };
+});
 
 builder.Services.AddAuthorization();
 

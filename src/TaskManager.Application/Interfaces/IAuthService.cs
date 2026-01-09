@@ -46,4 +46,12 @@ public interface IAuthService
     /// <param name="hash">The password hash.</param>
     /// <returns>True if the password matches; otherwise, false.</returns>
     bool VerifyPassword(string password, string hash);
+
+    /// <summary>
+    /// Generates a new API key for the user.
+    /// </summary>
+    /// <param name="request">The API key creation request.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The API key response containing the generated key (shown only once).</returns>
+    Task<ApiKeyResponse> GenerateApiKeyAsync(CreateApiKeyRequest request, CancellationToken cancellationToken = default);
 }
